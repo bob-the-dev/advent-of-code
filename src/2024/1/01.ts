@@ -6,32 +6,25 @@ export const getInput = (file: string) => {
   return fileContent.split("\n");
 };
 
-export const solution = async (file: string): Promise<string | number> => {
+export const solution = async (file: string) => {
   const input = getInput(file);
 
-  // log(input);
-
-  const left = [] as string[];
-  const right = [] as string[];
+  const left = [] as number[];
+  const right = [] as number[];
 
   input.forEach((line) => {
     const [l, r] = line.split("   ");
-    left.push(l);
-    right.push(r);
+    left.push(Number(l));
+    right.push(Number(r));
   });
 
   left.sort();
   right.sort();
 
-  // log(left);
-  // log(right);
-
   let total = 0;
   left.forEach((num, index) => {
-    total += Math.abs(Number(num) - Number(right[index]));
+    total += Math.abs(num - right[index]);
   });
-
-  // console.log(total);
 
   return total;
 };
