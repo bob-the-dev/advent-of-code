@@ -55,19 +55,12 @@ export const solution = async (file: string): Promise<string | number> => {
   //   })
   // );
 
-  const tiles: Tile[] = input.flatMap((line, y) =>
-    line.split("").flatMap((c, x) => {
-      return (["NORTH", "EAST", "WEST", "SOUTH"] as Direction[]).flatMap(
-        (dir) =>
-          [1, 2, 3].flatMap((repetition) => {
-            return {
-              x,
-              y,
-              n: Number(c),
-              dir,
-              repetition,
-            };
-          })
+  const tiles: number[][][][] = input.map((line, y) =>
+    line.split("").map((c, x) => {
+      return (["NORTH", "EAST", "WEST", "SOUTH"] as Direction[]).map((dir) =>
+        [1, 2, 3].map((repetition) => {
+          return Number(c);
+        })
       );
     })
   );
@@ -108,19 +101,15 @@ export const solution = async (file: string): Promise<string | number> => {
 
   unvisited.set({ x: 0, y: 0, n: 2, dir: undefined, repetition: 0 }, 0);
 
-  tiles.forEach((t) => {
-    return unvisited.set(t, Infinity);
-  });
-
   while (unvisited.size) {
     let current: { tile: Tile | undefined; value: number; baseRep?: number } = {
       tile: undefined,
       value: Infinity,
     };
 
-    unvisited.forEach((val, key) => {
-      if (current?.value && val <= current.value) {
-        current = { tile: key, value: val };
+    unvisited.forEach((value, tile) => {
+      if (value <= current.value) {
+        current = { tile, value };
       }
     });
 
@@ -132,15 +121,37 @@ export const solution = async (file: string): Promise<string | number> => {
       break;
     }
 
-    const { x, y } = current.tile;
+    const { x, y, dir, repetition } = current.tile;
+
+    const getIndexFromDir = (_dir: Direction): number => {
+      if (_dir === "NORTH") {
+        return 0;
+      }
+      if (_dir === "EAST") {
+        return 1;
+      }
+      if (_dir === "SOUTH") {
+        return 2;
+      }
+      if (_dir === "WEST") {
+        return 3;
+      }
+      return 0;
+    };
+
+    const dirOptions: Record<Direction, Position> = {
+      NORTH: { x: 0, y: -1 },
+      EAST: { x: 1, y: 0 },
+      SOUTH: { x: 0, y: 1 },
+      WEST: { x: -1, y: 0 },
+    };
+    const opposite = (_d?: Direction): Direction[] => {
+      if (_d === "NORTH" || _d === "SOUTH") {
+        return ["EAST", "WEST"];
+      } else return ["NORTH", "SOUTH"];
+    };
 
     const determineFilter = (from: Tile, to: Tile): boolean => {
-      const opposite = (_d?: Direction): Direction[] => {
-        if (_d === "NORTH" || _d === "SOUTH") {
-          return ["EAST", "WEST"];
-        } else return ["NORTH", "SOUTH"];
-      };
-
       const direction = from.dir;
 
       if (!direction || from.repetition === 0) {
@@ -148,13 +159,6 @@ export const solution = async (file: string): Promise<string | number> => {
       }
 
       const [optOne, optTwo] = opposite(direction);
-
-      const dirOptions: Record<Direction, Position> = {
-        NORTH: { x: 0, y: -1 },
-        EAST: { x: 1, y: 0 },
-        SOUTH: { x: 0, y: 1 },
-        WEST: { x: -1, y: 0 },
-      };
 
       const { x: dX, y: dY } = dirOptions[direction];
 
@@ -185,41 +189,66 @@ export const solution = async (file: string): Promise<string | number> => {
       return continueCheck || deviateCheck;
     };
 
-    const nextTiles = tiles
-      .filter((t) => {
-        if (x === cols - 1) {
-          return (t.x === x && t.y === y + 1) || (t.x === x - 1 && t.y === y);
-        }
-        if (y === rows - 1) {
-          return (t.x === x + 1 && t.y === y) || (t.x === x && t.y === y - 1);
-        }
-        return (
-          (t.x === x - 1 && t.y === y) ||
-          (t.x === x + 1 && t.y === y) ||
-          (t.x === x && t.y === y + 1) ||
-          (t.x === x && t.y === y - 1)
-        );
-      })
-      .filter((tile) => {
-        return determineFilter(current.tile!, tile);
-      });
+    const { x: dX, y: dY } = dirOptions[dir || "WEST"];
+
+    // Continueing
+    const tileOne = { x: x + dX, y: y + dY, dir, repetition: repetition + 1 };
+    const optionOne =
+      tiles[tileOne.y][tileOne.x][getIndexFromDir(tileOne.dir!)][
+        tileOne.repetition - 1
+      ];
+
+    const tileTwo = {
+      x: x + 1,
+      y: y,
+      dir: opposite(dir || "SOUTH"),
+      repetition: 1,
+    };
+
+    const optionTwo =
+      tiles[tileOne.y][tileOne.x][getIndexFromDir(tileOne.dir!)][
+        tileOne.repetition - 1
+      ];
+
+    console.log(tileOne, optionOne);
+
+    // const nextTiles = tiles
+    //   .filter((t) => {
+    //     if (x === cols - 1) {
+    //       return (t.x === x && t.y === y + 1) || (t.x === x - 1 && t.y === y);
+    //     }
+    //     if (y === rows - 1) {
+    //       return (t.x === x + 1 && t.y === y) || (t.x === x && t.y === y - 1);
+    //     }
+    //     return (
+    //       (t.x === x - 1 && t.y === y) ||
+    //       (t.x === x + 1 && t.y === y) ||
+    //       (t.x === x && t.y === y + 1) ||
+    //       (t.x === x && t.y === y - 1)
+    //     );
+    //   })
+    //   .filter((tile) => {
+    //     return determineFilter(current.tile!, tile);
+    //   });
 
     const baseValue = unvisited.get(current.tile!)!;
 
-    nextTiles.forEach((t) => {
-      if (unvisited.has(t)) {
-        const next = baseValue + t.n;
-        const prev = unvisited.get(t) || Infinity;
-        const newVal = next < prev ? next : prev;
-        unvisited.set(t, newVal);
-      }
-    });
+    // nextTiles.forEach((t) => {
+    //   if (unvisited.has(t)) {
+    //     const next = baseValue + t.n;
+    //     const prev = unvisited.get(t) || Infinity;
+    //     const newVal = next < prev ? next : prev;
+    //     unvisited.set(t, newVal);
+    //   }
+    // });
 
     unvisited.delete(current.tile);
 
     if (x === cols - 1 && y === rows - 1) {
       visited.set(current.tile, baseValue);
     }
+
+    break;
   }
 
   let lowest = Infinity;
