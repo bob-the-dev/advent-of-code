@@ -1,0 +1,36 @@
+[9 2] 3 4 5 -> i = 0 -> detect error, remove 0
+x [2 3] 4 5 -> continue on, no issue
+other solution?
+[9 2 3] -> invalid
+[2 3 4] -> valid
+etc
+
+[1 9] 2 3 4 -> i = 0 -> detect error, remove 0
+x [9 2] 3 4 -> removing was not the solution, still error, remove 1 -> start over ?
+1 x [2 3] 4 -> continue on, no issue 
+[1 9 2] invalid
+[9 2 3] invalid
+[2 3 4] valid
+
+6 5 [4 6] 2 1 -> i = 2 -> detect error, remove 2
+6 5 x [6 2] 1 ->  removing was not the solution, still error, remove 3 -> start over ?
+6 5 4 x [2 1] -> continue on, no issue
+
+[6 5 4] valid
+[5 4 6] invalid
+[4 6 2] invalid
+
+BUT, I'd rather not start over every time. 
+Especially not with foreach.
+Maybe slice the array from index and from index + 1, see if either solution has no errors, then the error count can not be over 2\
+
+very invalid solution 
+
+1 2 7 8 9 -> invalid option
+[1 2 7] invalid
+[2 7 8] invalid
+[7 8 9] valid ... this does not help
+
+
+if n was not there, would it be valid, then return. 
+lists that are valid return immediately, otherwise n iterations based on length of array

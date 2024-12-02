@@ -4,8 +4,6 @@ import * as prior from "./01";
 export const solution = async (file: string) => {
   const input = prior.getInput(file);
 
-  log(input);
-
   const left = [] as number[];
   const right = [] as number[];
 
@@ -14,9 +12,6 @@ export const solution = async (file: string) => {
     left.push(Number(l));
     right.push(Number(r));
   });
-
-  log(left);
-  log(right);
 
   let total = 0;
 
