@@ -14,8 +14,6 @@ export const solution = async (file: string): Promise<string | number> => {
       let prev: number | undefined = undefined;
       let copy = [...entries];
       copy.splice(index, 1);
-      console.log({ copy });
-
       safe = true;
 
       copy.forEach((e, i) => {

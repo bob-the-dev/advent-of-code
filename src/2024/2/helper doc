@@ -12,6 +12,10 @@ x [9 2] 3 4 -> removing was not the solution, still error, remove 1 -> start ove
 [9 2 3] invalid
 [2 3 4] valid
 
+1 9 2
+9 2 3
+2 3 4
+
 6 5 [4 6] 2 1 -> i = 2 -> detect error, remove 2
 6 5 x [6 2] 1 ->  removing was not the solution, still error, remove 3 -> start over ?
 6 5 4 x [2 1] -> continue on, no issue
@@ -27,6 +31,14 @@ Maybe slice the array from index and from index + 1, see if either solution has 
 very invalid solution 
 
 1 2 7 8 9 -> invalid option
+
+[1 2 7] -> invalid 1 7
+[2 7 8] -> invalid 2 8
+already too many invalids
+
+
+
+
 [1 2 7] invalid
 [2 7 8] invalid
 [7 8 9] valid ... this does not help
