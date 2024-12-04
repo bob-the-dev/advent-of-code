@@ -43,7 +43,6 @@ export const solution = async (file: string): Promise<string | number> => {
     }
 
     if (tl === "A" || br === "A" || br === "X" || tl === "X" || tl === br) {
-      console.log("tlbr no match", option, tl, br);
       tlbrMatch = false;
     }
 
@@ -58,26 +57,26 @@ export const solution = async (file: string): Promise<string | number> => {
       }
 
       if (tlbrMatch && trblMatch) {
-        console.log("A", option, tl, br, tr, bl);
+        // console.log("A", option, tl, br, tr, bl);
 
         return 1;
       }
     }
+    return 0;
+    // const t = perLetter[option.y - 1]?.[option.x];
+    // const b = perLetter[option.y + 1]?.[option.x];
+    // const l = perLetter[option.y]?.[option.x - 1];
+    // const r = perLetter[option.y]?.[option.x + 1];
 
-    const t = perLetter[option.y - 1]?.[option.x];
-    const b = perLetter[option.y + 1]?.[option.x];
-    const l = perLetter[option.y]?.[option.x - 1];
-    const r = perLetter[option.y]?.[option.x + 1];
+    // if (t === "A" || b === "A" || t === "X" || b === "X" || t === b) {
+    //   return 0;
+    // }
+    // if (l === "A" || r === "A" || l === "X" || r === "X" || l === r) {
+    //   return 0;
+    // }
 
-    if (t === "A" || b === "A" || t === "X" || b === "X" || t === b) {
-      return 0;
-    }
-    if (l === "A" || r === "A" || l === "X" || r === "X" || l === r) {
-      return 0;
-    }
-    console.log("A", option, t, b, l, r);
-
-    return 1;
+    // console.log("A", option, t, b, l, r);
+    // return 1;
   });
   const total = tots.reduce((acc: number, cur: number) => {
     return (acc += cur);
