@@ -17,8 +17,6 @@ export const solution = async (file: string): Promise<string | number> => {
     const found = match[0].replaceAll("mul(", "").replaceAll(")", "");
     const [a, b] = found.split(",");
 
-    console.log(a, b);
-
     total += Number(a) * Number(b);
   }
 

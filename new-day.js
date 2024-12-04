@@ -73,6 +73,21 @@ const createNewDay = async (y, d) => {
     "utf-8"
   );
 
+  let inputText = "";
+
+  try {
+    inputText = await (
+      await fetch(`https://adventofcode.com/${year}/day/${day}/input`, {
+        headers: {
+          Cookie:
+            "session=53616c7465645f5fbfc5b25df4fd6dbc57915b12b9634ae5b340c7826ff341a5d6cb3bd39bea23d0df321ec64de0a59a63380820425373034a58dc4e5c6b0e46",
+        },
+      })
+    ).text();
+  } catch (e) {
+    console.error(e);
+  }
+
   fs.mkdir(
     path.join(__dirname, `input/${year}/${day}`),
     { recursive: true },
@@ -86,14 +101,14 @@ const createNewDay = async (y, d) => {
       checkAndCreateFile({
         pathString: `input/${year}/${day}/input-one.txt`,
         fileType: "input",
-        fileContent: "[insert excercise input part one]",
+        fileContent: inputText,
         year,
         day,
       });
       checkAndCreateFile({
         pathString: `input/${year}/${day}/input-two.txt`,
         fileType: "input",
-        fileContent: "[insert excercise input part two]",
+        fileContent: inputText,
         year,
         day,
       });
