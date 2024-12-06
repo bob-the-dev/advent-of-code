@@ -1,5 +1,4 @@
 import { readFileSync } from "fs";
-import { log } from "../../../utils/log";
 
 export const getInput = (file: string) => {
   const fileContent = readFileSync(file, "utf-8");

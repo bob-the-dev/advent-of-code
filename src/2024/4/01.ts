@@ -22,21 +22,6 @@ export const solution = async (file: string): Promise<string | number> => {
     })
   );
 
-  // console.log(perLetter);
-  // console.log(xOptions);
-  /*
-  MMMSXXMASM
-  MSAMXMSMSA
-  AMXSXMAAMM
-  MSAMASMSMX
-  XMASAMXAMM
-  XXAMMXXAMA
-  SMSMSASXSS
-  SAXAMASAAA
-  MAMMMXMMMM
-  MXMXAXMASX
-  */
-
   let total = 0;
 
   const tots = xOptions.map((option) => {
