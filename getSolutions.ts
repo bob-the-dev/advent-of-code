@@ -111,7 +111,9 @@ const solveSolutions = async () => {
     `./src/${year}/${day}/02.ts`
   );
 
+  console.log("Performing script for Part 1 \n\n");
   const solOne = await firstSolution(inputOne);
+  console.log("\n Performing script for Part 2 \n\n");
   const solTwo = await secondSolution(inputTwo);
 
   const testAnswersExists = fs.existsSync(

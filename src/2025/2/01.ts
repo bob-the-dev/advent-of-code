@@ -26,7 +26,6 @@ export const solution = async (file: string): Promise<string | number> => {
   let total = 0;
 
   const checkRepetition = (n: number) => {
-    console.log("Checking for", n);
     const prevValue = mappedValues.get(n);
 
     if (prevValue) {
@@ -37,6 +36,9 @@ export const solution = async (file: string): Promise<string | number> => {
     const l = s.length;
 
     for (let i = 1; i <= l / 2; i++) {
+      if (isPrime(l) && i !== 1) {
+        continue;
+      }
       if (l % i !== 0) {
         continue;
       }

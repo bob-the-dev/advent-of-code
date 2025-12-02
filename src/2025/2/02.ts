@@ -14,7 +14,6 @@ export const solution = async (file: string): Promise<string | number> => {
   let total = 0;
 
   const checkRepetition = (n: number) => {
-    console.log("Checking for", n);
     const prevValue = mappedValues.get(n);
 
     if (prevValue) {
@@ -37,6 +36,7 @@ export const solution = async (file: string): Promise<string | number> => {
       }
 
       if (parts.every((p) => p === parts[0])) {
+        console.log(`Found repeating numbers in ${n}`);
         mappedValues.set(n, true);
         return n;
       }
