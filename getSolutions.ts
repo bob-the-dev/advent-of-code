@@ -172,13 +172,13 @@ const solveSolutions = async () => {
 
   const logRealAwnsers = () => {
     if (solOne) {
-      response.push(`Your answer to part 1 is ${solOne}.`);
+      response.push(`Your answer to part 1 is ${solOne}`);
     } else {
       response.push(`There is no answer for part 1 (yet).`);
     }
     response.push("\n");
     if (solTwo) {
-      response.push(`Your answer to part 2 is ${solTwo}.`);
+      response.push(`Your answer to part 2 is ${solTwo}`);
       //
     } else {
       response.push(`There is no answer for part 2 (yet).`);
