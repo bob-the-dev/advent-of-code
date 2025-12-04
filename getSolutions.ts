@@ -2,8 +2,13 @@ import fs, { readFileSync } from "node:fs";
 import path from "node:path";
 const prompt = require("prompt-sync")({ sigint: true });
 
-const args = process.argv.slice(2);
+const part = process.argv.find((v) => v.startsWith("--part"))?.split("=")[1];
 
+let test = process.argv.find((v) => v.startsWith("--test"))
+  ? "test"
+  : undefined;
+
+const args = process.argv.slice(2);
 const y = args[0];
 const d = args[1];
 
@@ -13,7 +18,6 @@ const solveSolutions = async () => {
 
   let year = y;
   let day = d;
-  let test = args[2];
 
   if (!(year && day)) {
     if (!year) {
@@ -43,7 +47,7 @@ const solveSolutions = async () => {
     }
   }
 
-  if (args[2] !== "test") {
+  if (!test) {
     const autocomplete = ["y", "n", "yes", "no"];
     const defaultOption = "yes";
     const testInput = prompt(
@@ -111,8 +115,8 @@ const solveSolutions = async () => {
     `./src/${year}/${day}/02.ts`
   );
 
-  const solOne = await firstSolution(inputOne);
-  const solTwo = await secondSolution(inputTwo);
+  const solOne = !part || part === "1" ? await firstSolution(inputOne) : "";
+  const solTwo = !part || part === "2" ? await secondSolution(inputTwo) : "";
 
   const testAnswersExists = fs.existsSync(
     path.join(__dirname, `input/${year}/${day}/test-output.txt`)
