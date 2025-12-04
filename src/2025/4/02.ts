@@ -1,4 +1,4 @@
-import { writeFile, writeFileSync } from "fs";
+import { mkdirSync, writeFile, writeFileSync } from "fs";
 import * as prior from "./01";
 import { argv } from "process";
 
@@ -62,15 +62,13 @@ export const solution = async (file: string): Promise<string | number> => {
     });
     console.log(display);
 
-    // for (let i = 0; i < display.length; i += nWidth) {
-    //   console.log(display.slice(i, i + nWidth));
-    // }
-
+    mkdirSync('./.output/day_04/test', { recursive: true },
+    );
+    
     writeFileSync(
-      `./.output/day_04/${
-        argv.find((v) => v === "--test") ? "test/" : ""
+      `./.output/day_04/${argv.find((v) => v === "--test") ? "test/" : ""
       }${total}.txt`,
-      display
+      display,
     );
 
     let removedThisCycle = 0;
