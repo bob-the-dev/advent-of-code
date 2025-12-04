@@ -1,4 +1,6 @@
+import { writeFile, writeFileSync } from "fs";
 import * as prior from "./01";
+import { argv } from "process";
 
 type Position = {
   x: number;
@@ -15,7 +17,7 @@ export const solution = async (file: string): Promise<string | number> => {
 
   let total = 0;
   let lastRemoved = Infinity;
-  let nWidhth = input[0].length;
+  let nWidth = input[0].trim().length;
   input.forEach((line, y) => {
     line.split("").forEach((c, x) => {
       if (c === ".") {
@@ -52,7 +54,24 @@ export const solution = async (file: string): Promise<string | number> => {
       } else {
         display += ".";
       }
+
+      if (current.x === nWidth - 1) {
+        // console.log("should add newline");
+        display += "\n";
+      }
     });
+    console.log(display);
+
+    // for (let i = 0; i < display.length; i += nWidth) {
+    //   console.log(display.slice(i, i + nWidth));
+    // }
+
+    writeFileSync(
+      `./.output/day_04/${
+        argv.find((v) => v === "--test") ? "test/" : ""
+      }${total}.txt`,
+      display
+    );
 
     let removedThisCycle = 0;
 
