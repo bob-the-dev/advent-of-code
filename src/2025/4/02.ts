@@ -1,6 +1,9 @@
 import { mkdirSync, writeFile, writeFileSync } from "fs";
 import * as prior from "./01";
 import { argv } from "process";
+import { createCanvas } from "canvas";
+// @ts-expect-error
+import GifEncoder from "gif-encoder-2";
 
 type Position = {
   x: number;
@@ -18,6 +21,7 @@ export const solution = async (file: string): Promise<string | number> => {
   let total = 0;
   let lastRemoved = Infinity;
   let nWidth = input[0].trim().length;
+  console.log(nWidth, input.length);
   input.forEach((line, y) => {
     line.split("").forEach((c, x) => {
       if (c === ".") {
@@ -45,12 +49,23 @@ export const solution = async (file: string): Promise<string | number> => {
     }
   };
 
+  const gif = new GifEncoder(nWidth * 5, input.length * 5);
+  gif.setDelay(100);
+  gif.start();
+
   while (lastRemoved > 0) {
     let display = "";
 
+    const ctx = createCanvas(nWidth * 5, input.length * 5).getContext("2d");
+
+    ctx.fillStyle = "#e6be9a";
+    ctx.fillRect(0, 0, nWidth * 5, input.length * 5);
+
+    ctx.fillStyle = "#325632";
     positions.forEach((current) => {
       if (current.hasPaper) {
         display += "@";
+        ctx.fillRect(current.x * 5, current.y * 5, 5, 5);
       } else {
         display += ".";
       }
@@ -60,16 +75,16 @@ export const solution = async (file: string): Promise<string | number> => {
         display += "\n";
       }
     });
-    console.log(display);
+    // console.log(display);
 
-    mkdirSync('./.output/day_04/test', { recursive: true },
-    );
-    
-    writeFileSync(
-      `./.output/day_04/${argv.find((v) => v === "--test") ? "test/" : ""
-      }${total}.txt`,
-      display,
-    );
+    // mkdirSync("./.output/day_04/test", { recursive: true });
+
+    // writeFileSync(
+    //   `./.output/day_04/${
+    //     argv.find((v) => v === "--test") ? "test/" : ""
+    //   }${total}.txt`,
+    //   display
+    // );
 
     let removedThisCycle = 0;
 
@@ -82,6 +97,14 @@ export const solution = async (file: string): Promise<string | number> => {
     positions.forEach((current, key) => {
       if (current.nNeighbours <= 3 && current.hasPaper) {
         removedThisCycle += 1;
+        ctx.fillStyle = [
+          "red",
+          "chartreuse",
+          "skyblue",
+          "orange",
+          "yellow",
+        ].sort(() => (Math.random() < 0.5 ? 1 : -1))[0];
+        ctx.fillRect(current.x * 5, current.y * 5, 5, 5);
         positions.set(key, { ...current, nNeighbours: 0, hasPaper: false });
       } else {
         positions.set(key, { ...current, nNeighbours: 0 });
@@ -89,7 +112,19 @@ export const solution = async (file: string): Promise<string | number> => {
     });
     total += removedThisCycle;
     lastRemoved = removedThisCycle;
+    gif.addFrame(ctx);
   }
+
+  gif.finish();
+
+  const buffer = gif.out.getData();
+
+  writeFileSync(
+    `./.output/day_04/${
+      argv.find((v) => v === "--test") ? "test/" : ""
+    }result.gif`,
+    buffer
+  );
 
   return total;
 };

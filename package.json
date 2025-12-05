@@ -29,6 +29,7 @@
   "dependencies": {
     "@types/node": "^20.10.0",
     "@types/prompt-sync": "^4.2.3",
+    "canvas": "^3.2.0",
     "gif-encoder-2": "^1.0.5",
     "node": "^21.2.0",
     "prettier": "^3.1.0",
