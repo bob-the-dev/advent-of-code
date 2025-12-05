@@ -1,6 +1,7 @@
 import * as prior from "./01";
 
 export const solution = async (file: string): Promise<string | number> => {
+  const begin = new Date().getMilliseconds();
   const input = prior.getInput(file);
 
   let [first] = input;
@@ -92,6 +93,9 @@ export const solution = async (file: string): Promise<string | number> => {
     consolidated = [];
   }
 
+  const end = new Date().getMilliseconds();
+  console.log(end - begin, 'duration');
+  
   return ranges.reduce((acc, cur) => {
     return (acc += cur[1] - cur[0] + 1);
   }, 0);
