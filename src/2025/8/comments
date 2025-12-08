@@ -1,0 +1,29 @@
+// filtered.forEach((s) => {
+//   const from = `${s.v.x},${s.v.y},${s.v.z}`;
+//   const to = `${s.nearest?.v.x},${s.nearest?.v.y},${s.nearest?.v.z}`;
+
+//   const existingToStart = circuits.findIndex((c) => c[0] === to);
+//   const existingToEnd = circuits.findIndex((c) => c[c.length - 1] === to);
+
+//   console.log("\n");
+//   if (nCheck <= 0) {
+//     return;
+//   }
+//   if (!(existingToStart || existingToEnd)) {
+//     console.log("Skipping", from, "~", to);
+//   } else if (existingToStart !== -1) {
+//     nCheck -= 1;
+//     console.log("Adding to circuit", from, "~", to);
+//     circuits[existingToStart] = [from, ...circuits[existingToStart]];
+//   } else if (existingToEnd !== -1) {
+//     nCheck -= 1;
+//     console.log("Adding to circuit", from, "~", to);
+//     circuits[existingToEnd] = [...circuits[existingToEnd], from];
+//   } else {
+//     nCheck -= 1;
+//     console.log("Adding a new circuit", from, "~", to);
+//     circuits.push([from, to]);
+//   }
+// });
+
+// console.log(circuits.sort((a, b) => b.length - a.length));

@@ -1,7 +1,7 @@
-import { mkdirSync, writeFile, writeFileSync } from "fs";
-import * as prior from "./01";
-import { argv } from "process";
 import { createCanvas } from "canvas";
+import { writeFileSync } from "fs";
+import { argv } from "process";
+import * as prior from "./01";
 // @ts-expect-error
 import GifEncoder from "gif-encoder-2";
 
