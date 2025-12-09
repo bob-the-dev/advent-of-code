@@ -2,11 +2,8 @@ import { Vector3 } from "three";
 import * as prior from "./01";
 
 export const solution = async (file: string): Promise<string | number> => {
+  const begin = new Date().getMilliseconds();
   const input = prior.getInput(file);
-
-  const test = process.argv.find((arg) => arg === "--test");
-
-  // let nCheck = test ? 10 : 1000;
 
   let circuits: string[][] = [];
 
@@ -38,10 +35,10 @@ export const solution = async (file: string): Promise<string | number> => {
   let last: { from: string; to: string } | undefined;
 
   sorted.forEach(({ from, to }) => {
-    console.log(last);
     if (circuits[0]?.length === input.length) {
       return;
     }
+    // console.log(last);
 
     const existingTo = circuits.findIndex(
       (c) => c.includes(to) && !c.includes(from)
@@ -147,6 +144,9 @@ export const solution = async (file: string): Promise<string | number> => {
   // );
 
   if (last !== undefined) {
+    const end = new Date().getMilliseconds();
+
+    console.log("Duration", end - begin);
     return Number(last?.from.split(",")[0]) * Number(last?.to.split(",")[0]);
   }
   return 0;
