@@ -2,6 +2,7 @@ import { Vector2 } from "three";
 import * as prior from "./01";
 
 export const solution = async (file: string): Promise<string | number> => {
+  const begin = Date.now();
   const input = prior.getInput(file);
 
   const straightLines: { from: number[]; to: number[] }[] = [];
@@ -75,27 +76,6 @@ export const solution = async (file: string): Promise<string | number> => {
     return (
       ccw(a1, b1, b2) !== ccw(a2, b1, b2) && ccw(a1, a2, b1) !== ccw(a1, a2, b2)
     );
-  }
-
-  // Main function: check if AB intersects any line in array, ignoring shared endpoints
-  // @ts-ignore
-  function doesLineCrossAny(a, b, lines) {
-    for (let [p1, p2] of lines) {
-      // Ignore lines that share endpoints with AB
-      if (
-        (a[0] === p1[0] && a[1] === p1[1]) ||
-        (a[0] === p2[0] && a[1] === p2[1]) ||
-        (b[0] === p1[0] && b[1] === p1[1]) ||
-        (b[0] === p2[0] && b[1] === p2[1])
-      ) {
-        continue;
-      }
-      if (segmentsIntersect(a, b, p1, p2)) {
-        console.log(a, b, p1, p2);
-        return true;
-      }
-    }
-    return false;
   }
 
   // @ts-ignore
@@ -264,12 +244,13 @@ export const solution = async (file: string): Promise<string | number> => {
       });
 
       if (enters) {
-        console.log(enters, d);
+        // console.log(enters, d);
         return false;
       }
 
       return true;
     });
 
+  console.log(`Duration ${Date.now() - begin}`);
   return areas?.[0].area;
 };
