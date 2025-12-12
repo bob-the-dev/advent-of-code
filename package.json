@@ -40,7 +40,8 @@
     "prompt-sync": "^4.2.0",
     "three": "^0.181.2",
     "ts-node": "^10.9.1",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.2",
+    "z3-solver": "^4.15.4"
   },
   "devDependencies": {
     "@types/d3": "^7.4.3",

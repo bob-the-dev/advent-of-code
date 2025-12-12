@@ -1,5 +1,7 @@
 import * as prior from "./01";
 
+import { Arith, init as initZ3Solver } from "z3-solver";
+
 export const solution = async (file: string): Promise<string | number> => {
   const input = prior.getInput(file);
   const splitInput = input.map((l) => l.split(" "));
@@ -16,12 +18,6 @@ export const solution = async (file: string): Promise<string | number> => {
       )
   );
 
-  // console.log(buttonSets);
-  // console.log(buttonSets.flat().length);
-
-  // [.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {1,1,0,1}
-  // 31 32 31 32 31 01 32 02 31 01 3
-
   const targets = splitInput.map((l) =>
     l[l.length - 1]
       .replace("{", "")
@@ -30,167 +26,166 @@ export const solution = async (file: string): Promise<string | number> => {
       .map((c) => Number(c))
   );
 
-  let total = 0;
+  // Stole this from Rik Claessens
+  const solveWithZ3 = async (
+    joltage: number[],
+    buttons: number[][]
+  ): Promise<number> => {
+    const { Context } = await initZ3Solver();
+    const { Int, Optimize } = Context("main");
+    const solver = new Optimize();
 
-  targets.forEach((target, index) => {
-    console.log(`\n\n---- TEST CASE ${index}----`);
-    let currentStatus = [...target];
-    console.log(currentStatus);
-
-    let buttons = buttonSets[index].sort((a, b) => b.length - a.length);
-
-    let iterations = 0;
-
-    while (
-      iterations <= target.reduce((acc, cur) => (acc += cur), 0) &&
-      currentStatus.some((s) => s > 0)
-    ) {
-      const buttonOptions = buttons
-        .filter((b) =>
-          b.includes(currentStatus.indexOf(Math.max(...currentStatus)))
-        )
-        .map((b) => {
-          return {
-            button: b,
-            n: b.reduce((acc, cur) => (acc += currentStatus[cur]), 0),
-            lowestI: Math.min(...b),
-          };
-        });
-
-      const currentButton = buttonOptions
-        .sort((a, b) => a.lowestI - b.lowestI)
-        .sort((a, b) => b.n - a.n)[0].button;
-
-      if (!currentButton) {
-        throw new Error("help");
-      }
-
-      console.log(currentButton);
-
-      currentButton?.forEach((c) => currentStatus[c]--);
-
-      console.log(currentStatus);
-      buttons = buttons.filter((b) => !b.some((c) => currentStatus[c] === 0));
-      iterations++;
+    // Create press count variables for each button
+    const buttonPresses: Arith[] = [];
+    for (let i = 0; i < buttons.length; i++) {
+      buttonPresses.push(Int.const(`b_${i}`));
     }
 
-    console.log(`--- total steps ${iterations} --- `);
-    total += iterations;
-    // start with the first item in the hightest max array -> reduce the maxs of the indexes of the item -> go max value item of the current item (eg from 31, 3 has the highest max, 1 has the lowest) -> repeat;
-    // if at any point the next item in the array is not viable, start at the first viable item in the highest max entry.
-    // if at any point the next item in the array does not exist, start at the first viable item in the hightes max entry.
+    // Button press count must be >= 0
+    for (const count of buttonPresses) {
+      solver.add(count.ge(0));
+    }
 
-    // 31 31 10 10 20 31 32 32 2
-    //  [
-    //    { index: 3, max: 0, sButtons: ["3,1", "3,2", "3"] },
-    //    { index: 1, max: 0, sButtons: ["3,1", "1,0"] },
-    //    { index: 2, max: 0, sButtons: ["3,2", "2,0", "2"] },
-    //    { index: 0, max: 0, sButtons: ["1,0", "2,0"] },
-    //  ];
+    // For each position, the total of button presses affecting it must equal the joltage value
+    for (let pos = 0; pos < joltage.length; pos++) {
+      const affects: Arith[] = [];
+      for (let idx = 0; idx < buttons.length; idx++) {
+        if (buttons[idx].includes(pos)) {
+          affects.push(buttonPresses[idx]);
+        }
+      }
+      // total of affecting buttons equals the joltage at this position
+      const total =
+        affects.length > 0
+          ? affects.reduce((a, v) => a.add(v), Int.val(0))
+          : Int.val(0);
+      solver.add(total.eq(Int.val(joltage[pos])));
+    }
 
-    // 2034, 2034, 201,
-    // [
-    //   { index: 2, max: 0, sButtons: ["2,0,3,4", "2,3,1,4", "2,0,1", "2,3"] },
-    //   { index: 3, max: 0, sButtons: ["2,0,3,4", "2,3,1,4", "2,3"] },
-    //   { index: 0, max: 0, sButtons: ["2,0,3,4", "2,0,1", "0,4"] },
-    //   { index: 1, max: 0, sButtons: ["2,3,1,4", "2,0,1"] },
-    //   { index: 4, max: 0, sButtons: ["2,0,3,4", "2,3,1,4", "0,4"] },
-    // ];
+    // Minimize total presses
+    const totalPresses = buttonPresses.reduce((a, v) => a.add(v), Int.val(0));
+    solver.minimize(totalPresses);
 
-    // 12043, 12043, 12043, 12043, 12043,
-    // [
-    //   { index: 1, max: 6, sButtons: ["1,2,0,4,5", "1,2"] },
-    //   { index: 2, max: 6, sButtons: ["1,2,0,4,5", "1,2"] },
-    //   { index: 0, max: 5, sButtons: ["1,2,0,4,5"] },
-    //   { index: 4, max: 5, sButtons: ["1,2,0,4,5"] },
-    //   { index: 5, max: 5, sButtons: ["1,2,0,4,5"] },
-    // ];
+    const result = await solver.check();
 
-    // let currentNumbers = target.map(() => 0);
+    if (result === "sat") {
+      const model = solver.model();
+      let total = 0;
+      for (const pressCount of buttonPresses) {
+        const val = model.eval(pressCount).toString();
+        total += parseInt(val, 10);
+      }
+      return total;
+    }
+    throw new Error("No solution found");
+  };
 
-    // let iterations = 0;
-    // // let maxIterations = target.reduce((acc, cur) => (acc += cur), 0);
-    // let maxIterations = 2;
+  const drawProgressBar = (progress: number) => {
+    const barWidth = 30;
+    const filledWidth = Math.floor((progress / 100) * barWidth);
+    const emptyWidth = barWidth - filledWidth;
+    const progressBar = "█".repeat(filledWidth) + "▒".repeat(emptyWidth);
+    return `[${progressBar}]`;
+  };
 
-    // let prioritized = target
-    //   .map((t, _i) => {
-    //     let buttons = buttonSets[index]
-    //       ?.filter((buttons) => buttons.includes(_i))
-    //       .map((buttons) =>
-    //         buttons.sort((a, b) => {
-    //           return target[b] - target[a];
-    //         })
-    //       )
-    //       .sort((a, b) => target[b[0]] - target[a[0]])
-    //       .sort((a, b) => b.length - a.length);
+  const findFewestNumberOfButtonPressesPart2LP = async (
+    buttons: number[][],
+    target: number[]
+  ): Promise<number> => {
+    return solveWithZ3(target, buttons);
+  };
 
-    //     return {
-    //       index: _i,
-    //       max: t,
-    //       buttons,
-    //       sButtons: buttons.map((b) => b.toString()),
-    //     };
-    //   })
-    //   .sort((a, b) => a.buttons.length - b.buttons.length)
-    //   .sort((a, b) => b.max - a.max);
+  let total = 0;
+  const results: number[] = [];
 
-    // let a = prioritized[0].index;
-    // let b = 0;
-    // let c = 0;
+  for (let i = 0; i < buttonSets.length; i++) {
+    console.log(
+      `${drawProgressBar((i / buttonSets.length) * 100)} Buttonset ${i} / ${
+        buttonSets.length
+      } \r`
+    );
 
-    // let nextButton = prioritized.find((p) => p.index === a)?.buttons[b];
+    const buttons = buttonSets[i];
+    const target = targets[i];
 
-    // while (
-    //   iterations <= maxIterations &&
-    //   !currentNumbers.some((g, i) => g === target[i])
-    // ) {
-    //   console.log(prioritized);
-    //   console.log({ nextButton });
+    const result = await findFewestNumberOfButtonPressesPart2LP(
+      buttons,
+      target
+    );
+    results.push(result);
+  }
 
-    //   if (!nextButton?.some((c) => prioritized.find((p) => p.index === c))) {
-    //     if (a === 0) {
-    //       b += 1;
-    //       console.log("break");
-    //       return;
-    //     }
-    //     a = 0;
-    //     b = 0;
-    //     console.log("break");
-    //     return;
-    //   }
+  console.log(
+    `${drawProgressBar(100)} Buttonset ${buttonSets.length} / ${
+      buttonSets.length
+    } \r`
+  );
 
-    //   if (!nextButton) {
-    //     console.log("break");
-    //     return;
-    //   }
+  total = results.reduce((acc, cur) => acc + cur, 0);
 
-    //   prioritized = prioritized
-    //     .map((p) => {
-    //       if (nextButton?.includes(p.index)) {
-    //         return { ...p, max: p.max - 1 };
-    //       }
-    //       return p;
-    //     })
-    //     .filter((p) => p.max);
+  // SOLUTION THAT ONLY NAIVELY WORKED FOR TEST DATA
 
-    //   const getNextButton = () => {
-    //     return nextButton;
-    //   };
+  // console.log(buttonSets);
+  // console.log(buttonSets.flat().length);
 
-    //   nextButton = getNextButton();
+  // [.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {1,1,0,1}
+  // 31 32 31 32 31 01 32 02 31 01 3
 
-    //   const nexta = nextButton.find((_, _i) => _i >= c);
+  // const targets = splitInput.map((l) =>
+  //   l[l.length - 1]
+  //     .replace("{", "")
+  //     .replace("}", "")
+  //     .split(",")
+  //     .map((c) => Number(c))
+  // );
 
-    //   let nextb = b;
-    //   if (nexta === a) {
-    //     b += 1;
-    //   } else {
-    //     a = nextb;
-    //   }
+  // let total = 0;
 
-    //   iterations += 1;
-    // }
-  });
+  // targets.forEach((target, index) => {
+  //   console.log(`\n\n---- TEST CASE ${index}----`);
+  //   let currentStatus = [...target];
+  //   console.log(currentStatus);
+
+  //   let buttons = buttonSets[index].sort((a, b) => b.length - a.length);
+
+  //   let iterations = 0;
+
+  //   while (
+  //     iterations <= target.reduce((acc, cur) => (acc += cur), 0) &&
+  //     currentStatus.some((s) => s > 0)
+  //   ) {
+  //     const buttonOptions = buttons
+  //       .filter((b) =>
+  //         b.includes(currentStatus.indexOf(Math.max(...currentStatus)))
+  //       )
+  //       .map((b) => {
+  //         return {
+  //           button: b,
+  //           n: b.reduce((acc, cur) => (acc += currentStatus[cur]), 0),
+  //           lowestI: Math.min(...b),
+  //         };
+  //       });
+
+  //     const currentButton = buttonOptions
+  //       .sort((a, b) => a.lowestI - b.lowestI)
+  //       .sort((a, b) => b.n - a.n)[0].button;
+
+  //     if (!currentButton) {
+  //       throw new Error("help");
+  //     }
+
+  //     console.log(currentButton);
+
+  //     currentButton?.forEach((c) => currentStatus[c]--);
+
+  //     console.log(currentStatus);
+  //     buttons = buttons.filter((b) => !b.some((c) => currentStatus[c] === 0));
+  //     iterations++;
+  //   }
+
+  //   console.log(`--- total steps ${iterations} --- `);
+  //   total += iterations;
+  // });
 
   return total;
 };
